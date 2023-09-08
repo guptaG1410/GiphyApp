@@ -7,7 +7,6 @@ import { useDebouncedCallback } from 'use-debounce';
 import { auth } from '../firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 
 export default function Search() {
   const [user, authLoading, error] = useAuthState(auth);
@@ -30,11 +29,42 @@ export default function Search() {
       // Fetching GIFs based on search inputs and offset
       const itemlimits = 21;
       const giphy_raw = await fetch(
-        `https://api.giphy.com/v1/gifs/search?api_key=jGs3O53GLnREsU4x9qju1Ume4gT7FL7t&q=10&limit=25&offset=0&rating=g&lang=en&bundle=messaging_non_clips`
+        process.env.NEXT_PUBLIC_GIPHY_API_KEY +
+          giphies.q +
+          `&limit=` +
+          itemlimits +
+          `&offset=` +
+          giphies.offset * itemlimits
       );
       if (giphy_raw.status === 200) {
         let giphy_json = await giphy_raw.json();
         console.log(giphy_json);
+        if (giphy_json?.data?.length > 0) {
+          //also storing the total page count for pagination
+          let totalpages =
+            (giphy_json.pagination.total_count + itemlimits - 1) / itemlimits;
+          setGiphies({
+            ...giphies,
+            data: giphy_json.data,
+            loading: false,
+            totalCount: giphy_json.pagination.total_count,
+            pages: totalpages,
+          });
+        } else {
+          setGiphies({
+            ...giphies,
+            error: '0 Result Found with query "' + giphies.q + '"',
+            loading: false,
+            data: [],
+          });
+        }
+      } else {
+        setGiphies({
+          ...giphies,
+          loading: false,
+          error:
+            'Due to some technical problem, failed to fetch giphies from the server.',
+        });
       }
     } catch (error) {
       console.log(`Error occured: ${error.message}`);
@@ -43,14 +73,14 @@ export default function Search() {
 
   //Use effect will call Data Fetcher function on every search input change for hot search, and on every pagination navigation.
   useEffect(() => {
+    document.title = 'Home';
     giphyQuery();
   }, [giphies.q, giphies.offset]);
 
   //If the user is not logged in navigate them to login page.
   useEffect(() => {
-      if(!user)
-          router.push('/login');
-  }, [user])
+    if (!user) router.push('/login');
+  }, [user]);
 
   //using use-debounced library, to avoid mulitple unneccesory api calls while changing search input value
   const debounced = useDebouncedCallback(async (value) => {
@@ -69,20 +99,20 @@ export default function Search() {
     );
   });
 
-   //function to change the page offset which wil make useEffect to trigger new query with previous offset
-   const handleDirectionPrevious = () => {
-    setGiphies({...giphies, offset: giphies.offset - 1});
-   }
+  //function to change the page offset which wil make useEffect to trigger new query with previous offset
+  const handleDirectionPrevious = () => {
+    setGiphies({ ...giphies, offset: giphies.offset - 1 });
+  };
 
-   //function to change the page offset which wil make useEffect to trigger new query with next offset.
-   const handleDirectionNext = () => {
-    setGiphies({...giphies, offset: giphies.offset + 1});
-   }
+  //function to change the page offset which wil make useEffect to trigger new query with next offset.
+  const handleDirectionNext = () => {
+    setGiphies({ ...giphies, offset: giphies.offset + 1 });
+  };
 
-   //this method wiil be called by pagination page numbers, this will change the offset accordingly
-   const handlePaginationByPageNumber = (e) => {
-    setGiphies({...giphies, offset: e - 1});
-   }
+  //this method wiil be called by pagination page numbers, this will change the offset accordingly
+  const handlePaginationByPageNumber = (e) => {
+    setGiphies({ ...giphies, offset: e - 1 });
+  };
 
   //Handling hot search
   const handleSearch = async () => {
@@ -100,7 +130,7 @@ export default function Search() {
     <Spinner />
   ) : (
     <>
-      <Header user={user}/>
+      <Header user={user} />
       <div className="bg-white-100 w-full text-sm min-h-screen h-full flex flex-col items-center">
         {/* Searchbar Section */}
         <div className="flex gap-3 my-4 bg-white w-full md:w-1/2 p-5 h-min rounded-md">
@@ -126,7 +156,7 @@ export default function Search() {
             <input
               onChange={(e) => debounced(e.target.value)}
               type="text"
-              className="py-3 w-full bg-gray-100 placeholder:text-gray-700 rounded-md pl-10 focus:outline-none"
+              className="text-black py-3 w-full bg-gray-100 placeholder:text-gray-700 rounded-md pl-10 focus:outline-none"
               placeholder="Start Searching..."
             />
           </div>
@@ -156,7 +186,7 @@ export default function Search() {
                     key={key}
                     className="w-full shadow-lg rounded-md border flex flex-col"
                   >
-                    <Image
+                    <img
                       src={giphy.images.fixed_width_downsampled.url}
                       className="rounded-t-md w-full h-56"
                       alt=""
@@ -266,7 +296,6 @@ export default function Search() {
             )}
           </>
         )}
-        <h1>Hey/ I am search</h1>
       </div>
     </>
   );
