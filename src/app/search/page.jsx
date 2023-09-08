@@ -75,11 +75,13 @@ export default function Search() {
   useEffect(() => {
     document.title = 'Home';
     giphyQuery();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [giphies.q, giphies.offset]);
 
   //If the user is not logged in navigate them to login page.
   useEffect(() => {
     if (!user) router.push('/login');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   //using use-debounced library, to avoid mulitple unneccesory api calls while changing search input value

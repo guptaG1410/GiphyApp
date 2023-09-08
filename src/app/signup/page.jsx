@@ -19,6 +19,7 @@ export default function Signup() {
     if (user) {
       router.push('/');
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const formSchema = Yup.object().shape({

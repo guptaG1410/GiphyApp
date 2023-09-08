@@ -19,6 +19,7 @@ export default function Login() {
     document.title = 'Login';
     // redirect the user if already logged in, user state is dependency
     if (user) router.push('/');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   // Yup Schema for input validation
@@ -98,7 +99,7 @@ export default function Login() {
               </div>
         
               <div className="flex items-center justify-between pb-6 gap-5">
-                <p className="mb-0 mr-2 whitespace-nowrap">Don't have an account?</p>
+                <p className="mb-0 mr-2 whitespace-nowrap">Don&apos;t have an account?</p>
                 <Link
                   href="/signup"
                   className="w-full text-center px-6 py-2 border-2 border-green-600 font-medium text-xs leading-tight uppercase rounded hover:bg-black hover:bg-opacity-5 focus:outline-none focus:ring-0 transition duration-150 ease-in-out"
