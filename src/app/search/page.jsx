@@ -23,7 +23,7 @@ export default function Search() {
   const router = useRouter();
 
   // Data fetcher function
-  const gihpyQuery = async () => {
+  const giphyQuery = async () => {
     try {
       setGiphies({ ...giphies, loading: true, error: null });
 
@@ -43,32 +43,64 @@ export default function Search() {
 
   //Use effect will call Data Fetcher function on every search input change for hot search, and on every pagination navigation.
   useEffect(() => {
-    gihpyQuery();
+    giphyQuery();
   }, [giphies.q, giphies.offset]);
 
-  // useEffect(() => {
-  //     if(!user)
-  //         router.push('/login');
-  // }, [user])
+  //If the user is not logged in navigate them to login page.
+  useEffect(() => {
+      if(!user)
+          router.push('/login');
+  }, [user])
 
-   //using use-debounced library, to avoid mulitple unneccesory api calls while changing search input value
-  const debounced = useDebouncedCallback(async(value) => {
-    setGiphies({...giphies, offset: 0, error: null, q: value, data: [], loading: value === '' || giphies.q.length < 3 ? false : true, totalCount: 0, pages: 0}
-    , 1000);
-  })
+  //using use-debounced library, to avoid mulitple unneccesory api calls while changing search input value
+  const debounced = useDebouncedCallback(async (value) => {
+    setGiphies(
+      {
+        ...giphies,
+        offset: 0,
+        error: null,
+        q: value,
+        data: [],
+        loading: value === '' || giphies.q.length < 3 ? false : true,
+        totalCount: 0,
+        pages: 0,
+      },
+      1000
+    );
+  });
+
+   //function to change the page offset which wil make useEffect to trigger new query with previous offset
+   const handleDirectionPrevious = () => {
+    setGiphies({...giphies, offset: giphies.offset - 1});
+   }
+
+   //function to change the page offset which wil make useEffect to trigger new query with next offset.
+   const handleDirectionNext = () => {
+    setGiphies({...giphies, offset: giphies.offset + 1});
+   }
+
+   //this method wiil be called by pagination page numbers, this will change the offset accordingly
+   const handlePaginationByPageNumber = (e) => {
+    setGiphies({...giphies, offset: e - 1});
+   }
 
   //Handling hot search
-  const handleSearch = async() => {
-    setGiphies({...giphies, offset: 0, error: null, data: [], loading: giphies.q === '' || giphies.q.length < 3 ? false : true});
-    gihpyQuery();
-  }
-
+  const handleSearch = async () => {
+    setGiphies({
+      ...giphies,
+      offset: 0,
+      error: null,
+      data: [],
+      loading: giphies.q === '' || giphies.q.length < 3 ? false : true,
+    });
+    giphyQuery();
+  };
 
   return authLoading ? (
     <Spinner />
   ) : (
     <>
-      <Header />
+      <Header user={user}/>
       <div className="bg-white-100 w-full text-sm min-h-screen h-full flex flex-col items-center">
         {/* Searchbar Section */}
         <div className="flex gap-3 my-4 bg-white w-full md:w-1/2 p-5 h-min rounded-md">
@@ -105,7 +137,7 @@ export default function Search() {
             Search
           </button>
         </div>
-        
+
         {/* Result Section */}
         {giphies.totalCount > 0 && (
           <div className="py-2 font-bold text-left w-full px-4 lg:px-20">
@@ -127,7 +159,7 @@ export default function Search() {
                     <Image
                       src={giphy.images.fixed_width_downsampled.url}
                       className="rounded-t-md w-full h-56"
-                      alt=''
+                      alt=""
                     />
                     <div className="w-full flex justify-between px-3 py-3">
                       <div className="font-bold text-lg">{giphy.title}</div>
@@ -139,6 +171,97 @@ export default function Search() {
                     )}
                   </div>
                 ))}
+              </div>
+            )}
+          </>
+        )}
+        {/* Pagination Section */}
+        {giphies.totalCount > 20 && (
+          <>
+            {/* Previous Button */}
+            {giphies.offset === 0 && (
+              <div className="flex font-bold w-full text-sm gap-4 items-center justify-center p-6">
+                <div className="">Previous</div>
+                <div className="bg-[#EB518F] bg-opacity-10 border-b-4 px-4 py-3 border-[#EB518F]">
+                  {giphies.offset + 1}
+                </div>
+                <div
+                  onClick={() =>
+                    handlePaginationByPageNumber(giphies.offset + 2)
+                  }
+                  className="bg-opacity-10 border-b-4 border-transparent px-4 py-3 cursor-pointer"
+                >
+                  {giphies.offset + 2}
+                </div>
+                <div
+                  onClick={() =>
+                    handlePaginationByPageNumber(giphies.offset + 3)
+                  }
+                  className="bg-opacity-10 border-b-4 border-transparent px-4 py-3 cursor-pointer"
+                >
+                  {giphies.offset + 3}
+                </div>
+                <div onClick={handleDirectionNext} className="cursor-pointer">
+                  Next
+                </div>
+              </div>
+            )}
+            {/* Three Pages refs, active in center if not first or last, else respectively first and last */}
+            {giphies.offset > 0 && giphies.offset + 1 < giphies.pages && (
+              <div className="flex font-bold w-full text-sm gap-4 items-center justify-center p-6">
+                <div onClick={handleDirectionPrevious} className="">
+                  Previous
+                </div>
+                <div
+                  onClick={() => handlePaginationByPageNumber(giphies.offset)}
+                  className="bg-opacity-10 border-b-4 border-transparent px-4 py-3 cursor-pointer"
+                >
+                  {giphies.offset}
+                </div>
+                <div className="bg-[#EB518F] bg-opacity-10 border-b-4 px-4 py-3 border-[#EB518F]">
+                  {giphies.offset + 1}
+                </div>
+                <div
+                  onClick={() =>
+                    handlePaginationByPageNumber(giphies.offset + 2)
+                  }
+                  className="bg-opacity-10 border-b-4 border-transparent px-4 py-3 cursor-pointer"
+                >
+                  {giphies.offset + 2}
+                </div>
+                <div onClick={handleDirectionNext} className="cursor-pointer">
+                  Next
+                </div>
+              </div>
+            )}
+
+            {/* Next Button */}
+            {giphies.offset + 1 === giphies.pages && (
+              <div className="flex font-bold w-full text-sm gap-4 items-center justify-center p-6">
+                <div
+                  onClick={handleDirectionPrevious}
+                  className="cursor-pointer"
+                >
+                  Previous
+                </div>
+                <div
+                  onClick={() =>
+                    handlePaginationByPageNumber(giphies.offset - 1)
+                  }
+                  className="bg-opacity-10 border-b-4 border-transparent px-4 py-3 cursor-pointer"
+                >
+                  {giphies.offset - 1}
+                </div>
+                <div
+                  onClick={() => handlePaginationByPageNumber(giphies.offset)}
+                  className="bg-opacity-10 border-b-4 border-transparent px-4 py-3 cursor-pointer"
+                >
+                  {giphies.offset}
+                </div>
+                <div className="bg-[#EB518F] bg-opacity-10 border-b-4 px-4 py-3 border-[#EB518F]">
+                  {giphies.offset + 1}
+                </div>
+                <div className="">Next</div>
               </div>
             )}
           </>

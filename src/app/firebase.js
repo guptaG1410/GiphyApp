@@ -10,12 +10,12 @@ import {
 import { getFirestore, addDoc, collection } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_APP_API_KEY,
-  authDomain: process.env.NEXT_APP_AUTH_DOMAIN,
-  projectId: process.env.NEXT_APP_PROJECT_ID,
-  storageBucket: process.env.NEXT_APP_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_APP_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_APP_APP_ID,
+  apiKey: 'AIzaSyCQCpYwCPyGeBuVZ1ebynNNA5JD39s0kGs',
+  authDomain: 'alphabi-d6593.firebaseapp.com',
+  projectId: 'alphabi-d6593',
+  storageBucket: 'alphabi-d6593.appspot.com',
+  messagingSenderId: '221855813130',
+  appId: '1:221855813130:web:090d0b61cc486c221659f3',
 };
 
 const app = initializeApp(firebaseConfig);
