@@ -1,7 +1,7 @@
 
 const Spinner = () => {
   return (
-    <div className="flex flex-col items-center justify-center">
+    <>
       <button
         disabled
         type="button"
@@ -26,7 +26,7 @@ const Spinner = () => {
         </svg>
         Loading...
       </button>
-    </div>
+    </>
   );
 };
 
